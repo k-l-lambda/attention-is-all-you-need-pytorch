@@ -46,6 +46,12 @@ _TEST_DATA_SOURCES = [
      "src": "newstest2014.de"}]
 
 
+spacy_alias_dict = {
+	'en': 'en_core_web_sm',
+	'de': 'de_core_news_sm',
+}
+
+
 class TqdmUpTo(tqdm):
     def update_to(self, b=1, bsize=1, tsize=None):
         if tsize is not None:
@@ -267,8 +273,8 @@ def main_wo_bpe():
     assert not any([opt.data_src, opt.data_trg]) or all([opt.data_src, opt.data_trg])
     print(opt)
 
-    src_lang_model = spacy.load(opt.lang_src)
-    trg_lang_model = spacy.load(opt.lang_trg)
+    src_lang_model = spacy.load(spacy_alias_dict[opt.lang_src])
+    trg_lang_model = spacy.load(spacy_alias_dict[opt.lang_trg])
 
     def tokenize_src(text):
         return [tok.text for tok in src_lang_model.tokenizer(text)]
