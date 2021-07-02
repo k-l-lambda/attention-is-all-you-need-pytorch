@@ -6,7 +6,7 @@ import dill as pickle
 from tqdm import tqdm
 
 import transformer.Constants as Constants
-from torchtext.data import Dataset
+from torchtext.legacy.data import Dataset
 from transformer.Models import Transformer
 from transformer.Translator import Translator
 

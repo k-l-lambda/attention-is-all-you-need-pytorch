@@ -106,3 +106,4 @@ ENV/
 *.pkl
 /.data/
 /output/
+/prediction.txt
