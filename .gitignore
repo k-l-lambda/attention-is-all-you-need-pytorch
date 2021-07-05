@@ -107,3 +107,4 @@ ENV/
 /.data/
 /output/
 /prediction.txt
+.vscode/

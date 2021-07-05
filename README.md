@@ -58,6 +58,12 @@ python3 train.py -data_pkl m30k_deen_shr.pkl -embs_share_weight -proj_share_weig
 python3 translate.py -data_pkl m30k_deen_shr.pkl -model trained.chkpt -output prediction.txt
 ```
 
+In CPU:
+
+```bash
+python3 translate.py -data_pkl m30k_deen_shr.pkl -model ./output/model.chkpt -output prediction.txt -no_cuda
+```
+
 ## [(WIP)] WMT'17 Multimodal Translation: de-en w/ BPE 
 ### 1) Download and preprocess the data with bpe:
 
