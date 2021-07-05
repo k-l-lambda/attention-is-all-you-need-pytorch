@@ -18,7 +18,7 @@ from torchtext.legacy.data import Dataset, BucketIterator
 from torchtext.legacy.datasets import TranslationDataset
 
 import transformer.Constants as Constants
-from transformer.Models import Transformer
+from transformer.Models import Transformer, TransformerGen
 from transformer.Optim import ScheduledOptim
 
 __author__ = "Yu-Hsiang Huang"
@@ -239,6 +239,8 @@ def main():
     parser.add_argument('-no_cuda', action='store_true')
     parser.add_argument('-label_smoothing', action='store_true')
 
+    parser.add_argument('-gen', action='store_true')
+
     opt = parser.parse_args()
     opt.cuda = not opt.no_cuda
     opt.d_word_vec = opt.d_model
@@ -278,7 +280,9 @@ def main():
 
     print(opt)
 
-    transformer = Transformer(
+    modelClass = TransformerGen if opt.gen else Transformer
+
+    transformer = modelClass(
         opt.src_vocab_size,
         opt.trg_vocab_size,
         src_pad_idx=opt.src_pad_idx,
