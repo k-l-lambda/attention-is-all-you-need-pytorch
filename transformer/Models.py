@@ -209,7 +209,7 @@ class TransformerGen(nn.Module):
             scale_emb_or_prj='prj'):
         super().__init__()
 
-        self.src_pad_idx, self.trg_pad_idx = src_pad_idx, trg_pad_idx
+        self.trg_pad_idx = trg_pad_idx
 
         # In section 3.4 of paper "Attention Is All You Need", there is such detail:
         # "In our model, we share the same weight matrix between the two
@@ -227,10 +227,10 @@ class TransformerGen(nn.Module):
         self.d_model = d_model
 
         self.decoder = Encoder(
-            n_src_vocab=n_src_vocab, n_position=n_position,
+            n_src_vocab=n_trg_vocab, n_position=n_position,
             d_word_vec=d_word_vec, d_model=d_model, d_inner=d_inner,
             n_layers=n_layers, n_head=n_head, d_k=d_k, d_v=d_v,
-            pad_idx=src_pad_idx, dropout=dropout, scale_emb=scale_emb)
+            pad_idx=trg_pad_idx, dropout=dropout, scale_emb=scale_emb)
 
         self.trg_word_prj = nn.Linear(d_model, n_trg_vocab, bias=False)
 
@@ -248,7 +248,6 @@ class TransformerGen(nn.Module):
 
 
     def forward(self, _, trg_seq):
-        #src_mask = get_pad_mask(src_seq, self.src_pad_idx)
         trg_mask = get_pad_mask(trg_seq, self.trg_pad_idx) & get_subsequent_mask(trg_seq)
 
         dec_output, *_ = self.decoder(trg_seq, trg_mask)
