@@ -1,4 +1,5 @@
 
+import sys
 import io
 import logging
 import dill as pickle
@@ -11,6 +12,9 @@ from torchtext.vocab import Vocab
 
 from transformer.Constants import *
 
+
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 def buildFromFile (file_path, tokenizer_type = None):
@@ -27,7 +31,10 @@ def buildFromFile (file_path, tokenizer_type = None):
 	examples = []
 	raw_iter = iter(io.open(file_path, 'rt'))
 	for raw in raw_iter:
-		tensor = torch.tensor([vocab[token] for token in tokenizer(raw)], dtype=torch.long)
+		sentence = tokenizer(raw)
+		sentence.insert(0, BOS_WORD)
+		sentence.append(EOS_WORD)
+		tensor = torch.tensor([vocab[token] for token in sentence], dtype=torch.long)
 		examples.append(tensor)
 
 	return vocab, examples
