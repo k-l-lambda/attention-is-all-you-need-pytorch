@@ -46,14 +46,16 @@ def main():
 
 	parser.add_argument('-model', required=True,
 						help='Path to model weight file')
-	#parser.add_argument('-data_pkl', required=True,
-	#					help='Pickle file with both instances and vocabulary.')
+	parser.add_argument('-data_pkl', required=True,
+						help='Pickle file with both instances and vocabulary.')
 	parser.add_argument('-output', default='pred.txt',
 						help="""Path to output the predictions (each line will
 						be the decoded sequence""")
 	parser.add_argument('-beam_size', type=int, default=5)
 	parser.add_argument('-max_seq_len', type=int, default=100)
 	parser.add_argument('-no_cuda', action='store_true')
+	parser.add_argument('-count', type=int, default=100)
+	parser.add_argument('-temperature', type=float, default=1)
 
 	opt = parser.parse_args()
 	opt.cuda = not opt.no_cuda
@@ -67,6 +69,9 @@ def main():
 	opt.trg_eos_idx = TRG.vocab.stoi[Constants.EOS_WORD]
 
 	test_loader = Dataset(examples=data['test'], fields={'src': SRC, 'trg': TRG})'''
+
+	data = pickle.load(open(opt.data_pkl, 'rb'))
+	TRG = data['vocab']['trg']
 
 	device = torch.device('cuda' if opt.cuda else 'cpu')
 	generator = Generator(
@@ -89,8 +94,12 @@ def main():
 			pred_line = pred_line.replace(Constants.BOS_WORD, '').replace(Constants.EOS_WORD, '')
 			#print(pred_line)
 			f.write(pred_line.strip() + '\n')'''
-		pred_seq = generator.generate_setence()
-		print('pred_seq:', pred_seq)
+		for example in tqdm(range(opt.count), mininterval=2, desc='  - (Test)', leave=False):
+			pred_seq = generator.generate_setence(temperature = opt.temperature)
+			pred_line = ' '.join(TRG.vocab.itos[idx] for idx in pred_seq)
+			print('pred_line:', pred_line)
+
+			f.write(pred_line.strip() + '\n')
 
 	print('[Info] Finished.')
 

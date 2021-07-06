@@ -113,19 +113,31 @@ class Generator(nn.Module):
 	def _model_decode(self, seq):
 		mask = get_subsequent_mask(seq)
 		dec_output, *_ = self.model.decoder(seq, mask)
-		vocab_vec = self.model.trg_word_prj(dec_output)
+		vocab_vec = self.model.trg_word_prj(dec_output)[:, -1, :]
 		return vocab_vec
 
 
 	def generate_setence (self, temperature = 1):
-		seq = torch.LongTensor([[self.trg_bos_idx]])
+		seq = torch.full((1, self.max_seq_len), 1, dtype=torch.long)
+		seq[0][0] = self.trg_bos_idx
+
+		step = 1
 
 		with torch.no_grad():
 			while True:
-				dec_output = self._model_decode(seq)
-				dec_output = F.softmax(dec_output / temperature, dim=-1).flatten()
+				dec_output = self._model_decode(seq[:, :step])
+				dec_output /= temperature
+				dec_output = F.softmax(dec_output, dim=-1).flatten()
 				word = torch.multinomial(dec_output, 1)
-				print('word:', word)
-				# TODO:
+				#print('word:', word)
 
-		return seq
+				if word == self.trg_eos_idx:
+					break
+
+				seq[0][step] = word[0]
+
+				step += 1
+				if step >= self.max_seq_len:
+					break
+
+		return seq[0][1:step]
