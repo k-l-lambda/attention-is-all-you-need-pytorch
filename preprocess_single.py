@@ -9,6 +9,8 @@ import torch
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import Vocab
 
+from transformer.Constants import *
+
 
 
 def buildFromFile (file_path, tokenizer_type = None):
@@ -19,7 +21,7 @@ def buildFromFile (file_path, tokenizer_type = None):
 	with io.open(file_path, 'rt') as f:
 		for line in f:
 			counter.update(tokenizer(line))
-	vocab = Vocab(counter, specials=['<unk>', '<pad>', '<bos>', '<eos>'])
+	vocab = Vocab(counter, specials=[UNK_WORD, PAD_WORD, BOS_WORD, EOS_WORD])
 	#print('vocab:', vocab)
 
 	examples = []
