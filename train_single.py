@@ -21,7 +21,7 @@ import transformer.Constants as Constants
 from transformer.Models import TransformerGen
 from transformer.Optim import ScheduledOptim
 
-__author__ = "Yu-Hsiang Huang"
+
 
 def cal_performance(pred, gold, trg_pad_idx, smoothing=False):
 	''' Apply label smoothing if needed '''
@@ -58,17 +58,6 @@ def cal_loss(pred, gold, trg_pad_idx, smoothing=False):
 	return loss
 
 
-def patch_src(src, pad_idx):
-	src = src.transpose(0, 1)
-	return src
-
-
-def patch_trg(trg, pad_idx):
-	trg = trg.transpose(0, 1)
-	trg, gold = trg[:, :-1], trg[:, 1:].contiguous().view(-1)
-	return trg, gold
-
-
 def train_epoch(model, training_data, optimizer, opt, device, smoothing):
 	''' Epoch operation in training phase'''
 
@@ -79,8 +68,6 @@ def train_epoch(model, training_data, optimizer, opt, device, smoothing):
 	for batch in tqdm(training_data, mininterval=2, desc=desc, leave=False):
 
 		# prepare data
-		#src_seq = patch_src(batch.src, opt.src_pad_idx).to(device)
-		#trg_seq, gold = map(lambda x: x.to(device), patch_trg(batch.trg, opt.pad_idx))
 		trg_seq, gold = batch[:, :-1], batch[:, 1:].contiguous().view(-1)
 
 		# forward
@@ -114,8 +101,6 @@ def eval_epoch(model, validation_data, device, opt):
 		for batch in tqdm(validation_data, mininterval=2, desc=desc, leave=False):
 
 			# prepare data
-			#src_seq = patch_src(batch.src, opt.src_pad_idx).to(device)
-			#trg_seq, gold = map(lambda x: x.to(device), patch_trg(batch.trg, opt.pad_idx))
 			trg_seq, gold = batch[:, :-1], batch[:, 1:].contiguous().view(-1)
 
 			# forward
@@ -225,6 +210,7 @@ def main():
 	parser.add_argument('-warmup','--n_warmup_steps', type=int, default=4000)
 	parser.add_argument('-lr_mul', type=float, default=2.0)
 	parser.add_argument('-seed', type=int, default=None)
+	parser.add_argument('-n_seq_max_len', type=int, default=0x400)
 
 	parser.add_argument('-dropout', type=float, default=0.1)
 	parser.add_argument('-embs_share_weight', action='store_true')
@@ -289,7 +275,7 @@ def main():
 		d_inner=opt.d_inner_hid,
 		n_layers=opt.n_layers,
 		n_head=opt.n_head,
-		n_position=0x1000,
+		n_position=opt.n_seq_max_len,
 		dropout=opt.dropout,
 		scale_emb_or_prj=opt.scale_emb_or_prj).to(device)
 
@@ -300,7 +286,27 @@ def main():
 	train(transformer, training_data, validation_data, optimizer, device, opt)
 
 
-def batchize (data, batch_size, device):
+def batchize (data, batch_size, n_seq_max_len, device):
+	def splitSentence (sentence, max_len):
+		OVERLOPPED = max_len // 3
+
+		s_len = len(sentence)
+		if s_len <= max_len:
+			return [sentence]
+
+		result = []
+		for i in range(0, s_len, max_len - OVERLOPPED):
+			if s_len - i < max_len:
+				result.append(sentence[-max_len:])
+			else:
+				result.append(sentence[i:i + max_len])
+
+		return result
+
+	# split long sentence
+	sentenceLists = [splitSentence(sentence, n_seq_max_len) for sentence in data]
+	data = [sentence for sentences in sentenceLists for sentence in sentences]
+
 	result = []
 	for i in range(0, len(data), batch_size):
 		#records = [torch.reshape(record, (1, -1)) for record in data[i:min(i + batch_size, len(data))]]
@@ -318,6 +324,7 @@ def batchize (data, batch_size, device):
 
 def prepare_dataloaders(opt, device):
 	batch_size = opt.batch_size
+	n_seq_max_len = opt.n_seq_max_len
 	data = pickle.load(open(opt.data_pkl, 'rb'))
 
 	#opt.max_token_seq_len = data['settings'].max_len
@@ -325,27 +332,12 @@ def prepare_dataloaders(opt, device):
 
 	opt.vocab_size = len(data['vocab'])
 
-	'''#========= Preparing Model =========#
-	if opt.embs_share_weight:
-		assert data['vocab']['src'].vocab.stoi == data['vocab']['trg'].vocab.stoi, \
-			'To sharing word embedding the src/trg word2idx table shall be the same.'
-
-	fields = {'src': data['vocab']['src'], 'trg':data['vocab']['trg']}
-
-	train = Dataset(examples=data['train'], fields=fields)
-	val = Dataset(examples=data['valid'], fields=fields)
-
-	train_iterator = BucketIterator(train, batch_size=batch_size, device=device, train=True)
-	val_iterator = BucketIterator(val, batch_size=batch_size, device=device)
-
-	return train_iterator, val_iterator'''
-
 	examples = data['examples']
-	train_examples = [sentence for i, sentence in enumerate(examples) if i in [1, 2, 3, 4, 5, 6, 7, 8]]
-	valid_examples = [sentence for i, sentence in enumerate(examples) if i in [9]]
+	train_examples = [sentence for i, sentence in enumerate(examples) if i % 10 in [1, 2, 3, 4, 5, 6, 7, 8]]
+	valid_examples = [sentence for i, sentence in enumerate(examples) if i % 10 in [9]]
 
-	train_examples = batchize(train_examples, batch_size, device)
-	valid_examples = batchize(valid_examples, batch_size, device)
+	train_examples = batchize(train_examples, batch_size, n_seq_max_len, device)
+	valid_examples = batchize(valid_examples, batch_size, n_seq_max_len, device)
 
 	return train_examples, valid_examples
 
