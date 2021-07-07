@@ -18,11 +18,11 @@ def load_model(opt, device):
 	model_opt = checkpoint['settings']
 
 	model = TransformerGen(
-		model_opt.src_vocab_size,
-		model_opt.trg_vocab_size,
+		model_opt.vocab_size,
+		model_opt.vocab_size,
 
-		model_opt.src_pad_idx,
-		model_opt.trg_pad_idx,
+		model_opt.pad_idx,
+		model_opt.pad_idx,
 
 		trg_emb_prj_weight_sharing=model_opt.proj_share_weight,
 		emb_src_trg_weight_sharing=model_opt.embs_share_weight,
@@ -33,7 +33,9 @@ def load_model(opt, device):
 		d_inner=model_opt.d_inner_hid,
 		n_layers=model_opt.n_layers,
 		n_head=model_opt.n_head,
-		dropout=model_opt.dropout).to(device)
+		n_position=model_opt.n_seq_max_len,
+		dropout=model_opt.dropout,
+	).to(device)
 
 	model.load_state_dict(checkpoint['model'])
 	print('[Info] Trained model state loaded.')
@@ -61,20 +63,21 @@ def main():
 	opt.cuda = not opt.no_cuda
 
 	data = pickle.load(open(opt.data_pkl, 'rb'))
-	TRG = data['vocab']['trg']
+	vocab = data['vocab']
+	vocab = vocab['trg'].vocab if hasattr(vocab, 'get') and vocab.get('trg') else vocab
 
 	device = torch.device('cuda' if opt.cuda else 'cpu')
 	generator = Generator(
 		model=load_model(opt, device),
 		max_seq_len=opt.max_seq_len,
-		trg_bos_idx=TRG.vocab.stoi[Constants.BOS_WORD],
-		trg_eos_idx=TRG.vocab.stoi[Constants.EOS_WORD],
+		trg_bos_idx=vocab.stoi[Constants.BOS_WORD],
+		trg_eos_idx=vocab.stoi[Constants.EOS_WORD],
 	).to(device)
 
 	with open(opt.output, 'w') as f:
-		for example in tqdm(range(opt.count), mininterval=2, desc='  - (Test)', leave=False):
+		for example in tqdm(range(opt.count), mininterval=1, desc='  - (Test)', leave=False):
 			pred_seq = generator.generate_setence(temperature = opt.temperature)
-			pred_line = ' '.join(TRG.vocab.itos[idx] for idx in pred_seq)
+			pred_line = ' '.join(vocab.itos[idx] for idx in pred_seq)
 			#print('pred_line:', pred_line)
 
 			f.write(pred_line.strip() + '\n')

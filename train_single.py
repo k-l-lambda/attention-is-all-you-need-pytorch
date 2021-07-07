@@ -288,14 +288,14 @@ def main():
 
 def batchize (data, batch_size, n_seq_max_len, device):
 	def splitSentence (sentence, max_len):
-		OVERLOPPED = max_len // 3
+		OVERLAPPED = max_len // 3
 
 		s_len = len(sentence)
 		if s_len <= max_len:
 			return [sentence]
 
 		result = []
-		for i in range(0, s_len, max_len - OVERLOPPED):
+		for i in range(0, s_len, max_len - OVERLAPPED):
 			if s_len - i < max_len:
 				result.append(sentence[-max_len:])
 			else:
