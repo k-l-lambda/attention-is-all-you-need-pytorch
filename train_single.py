@@ -65,7 +65,7 @@ def train_epoch(model, training_data, optimizer, opt, device, smoothing):
 	total_loss, n_word_total, n_word_correct = 0, 0, 0 
 
 	desc = '  - (Training)   '
-	for batch in tqdm(training_data, mininterval=2, desc=desc, leave=False):
+	for batch in tqdm(training_data, mininterval=1, desc=desc, leave=False):
 
 		# prepare data
 		trg_seq, gold = batch[:, :-1], batch[:, 1:].contiguous().view(-1)
@@ -98,7 +98,7 @@ def eval_epoch(model, validation_data, device, opt):
 
 	desc = '  - (Validation) '
 	with torch.no_grad():
-		for batch in tqdm(validation_data, mininterval=2, desc=desc, leave=False):
+		for batch in tqdm(validation_data, mininterval=1, desc=desc, leave=False):
 
 			# prepare data
 			trg_seq, gold = batch[:, :-1], batch[:, 1:].contiguous().view(-1)
