@@ -54,7 +54,7 @@ def main():
 	parser.add_argument('-output', default='pred.txt',
 						help="""Path to output the predictions (each line will
 						be the decoded sequence""")
-	parser.add_argument('-max_seq_len', type=int, default=100)
+	parser.add_argument('-max_seq_len', type=int, default=0x100)
 	parser.add_argument('-no_cuda', action='store_true')
 	parser.add_argument('-count', type=int, default=100)
 	parser.add_argument('-temperature', type=float, default=1)
