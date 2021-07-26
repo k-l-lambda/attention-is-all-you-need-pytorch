@@ -56,6 +56,7 @@ def main():
 						be the decoded sequence""")
 	parser.add_argument('-max_seq_len', type=int, default=0x100)
 	parser.add_argument('-no_cuda', action='store_true')
+	parser.add_argument('-no_word_sep', action='store_true')
 	parser.add_argument('-count', type=int, default=100)
 	parser.add_argument('-temperature', type=float, default=1)
 
@@ -74,10 +75,12 @@ def main():
 		trg_eos_idx=vocab.stoi[Constants.EOS_WORD],
 	).to(device)
 
+	word_sep = '' if opt.no_word_sep else ' '
+
 	with open(opt.output, 'w') as f:
 		for example in tqdm(range(opt.count), mininterval=1, desc='  - (Test)', leave=False):
 			pred_seq = generator.generate_sentence(temperature = opt.temperature)
-			pred_line = ' '.join(vocab.itos[idx] for idx in pred_seq)
+			pred_line = word_sep.join(vocab.itos[idx] for idx in pred_seq)
 			#print('pred_line:', pred_line)
 
 			f.write(pred_line.strip() + '\n')
