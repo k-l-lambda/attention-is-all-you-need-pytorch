@@ -76,7 +76,7 @@ def main():
 
 	with open(opt.output, 'w') as f:
 		for example in tqdm(range(opt.count), mininterval=1, desc='  - (Test)', leave=False):
-			pred_seq = generator.generate_setence(temperature = opt.temperature)
+			pred_seq = generator.generate_sentence(temperature = opt.temperature)
 			pred_line = ' '.join(vocab.itos[idx] for idx in pred_seq)
 			#print('pred_line:', pred_line)
 

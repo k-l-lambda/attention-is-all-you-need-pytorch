@@ -28,7 +28,7 @@ class Generator(nn.Module):
 		return vocab_vec
 
 
-	def generate_setence (self, temperature = 1):
+	def generate_sentence (self, temperature = 1):
 		seq = torch.full((1, self.max_seq_len), 1, dtype=torch.long)
 		seq[0][0] = self.trg_bos_idx
 
