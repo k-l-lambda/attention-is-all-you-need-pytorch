@@ -84,6 +84,7 @@ def main():
 			#print('pred_line:', pred_line)
 
 			f.write(pred_line.strip() + '\n')
+			f.flush()
 
 	print('[Info] Finished.')
 
