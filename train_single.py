@@ -124,6 +124,11 @@ def train(model, training_data, validation_data, optimizer, device, opt):
 	# Use tensorboard to plot curves, e.g. perplexity, accuracy, learning rate
 	if opt.use_tb:
 		print("[Info] Use Tensorboard")
+
+		import tensorflow as tf
+		import tensorboard.compat.tensorflow_stub as stub
+		tf.io.gfile = stub.io.gfile
+
 		from torch.utils.tensorboard import SummaryWriter
 		tb_writer = SummaryWriter(log_dir=os.path.join(opt.output_dir, 'tensorboard'))
 
