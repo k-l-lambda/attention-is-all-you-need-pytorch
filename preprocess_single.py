@@ -67,7 +67,7 @@ def buildFromFileFixed (file_path, tokenizer_type = None, segment_len = 0x400):
 
 		sentence = tokenizer(segment)
 		sentence.insert(0, BOS_WORD)
-		sentence.append(EOS_WORD)
+		#sentence.append(EOS_WORD)
 		tensor = torch.tensor([vocab[token] for token in sentence], dtype=torch.long)
 		examples.append(tensor)
 
