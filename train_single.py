@@ -195,7 +195,7 @@ def train(model, training_data, validation_data, optimizer, device, opt):
 def main():
 	''' 
 	Usage:
-	python train.py -data_pkl m30k_deen_shr.pkl -log m30k_deen_shr -embs_share_weight -proj_share_weight -label_smoothing -output_dir output -b 256 -warmup 128000
+	python train.py -data_pkl m30k_deen_shr.pkl -log m30k_deen_shr -proj_share_weight -label_smoothing -output_dir output -b 256 -warmup 128000
 	'''
 
 	parser = argparse.ArgumentParser()
@@ -218,7 +218,7 @@ def main():
 	parser.add_argument('-n_seq_max_len', type=int, default=0x400)
 
 	parser.add_argument('-dropout', type=float, default=0.1)
-	parser.add_argument('-embs_share_weight', action='store_true')
+	#parser.add_argument('-embs_share_weight', action='store_true')
 	parser.add_argument('-proj_share_weight', action='store_true')
 	parser.add_argument('-scale_emb_or_prj', type=str, default='prj')
 
@@ -272,7 +272,6 @@ def main():
 		src_pad_idx=opt.pad_idx,
 		trg_pad_idx=opt.pad_idx,
 		trg_emb_prj_weight_sharing=opt.proj_share_weight,
-		emb_src_trg_weight_sharing=opt.embs_share_weight,
 		d_k=opt.d_k,
 		d_v=opt.d_v,
 		d_model=opt.d_model,

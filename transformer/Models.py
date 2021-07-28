@@ -205,7 +205,7 @@ class TransformerGen(nn.Module):
             self, n_src_vocab, n_trg_vocab, src_pad_idx, trg_pad_idx,
             d_word_vec=512, d_model=512, d_inner=2048,
             n_layers=6, n_head=8, d_k=64, d_v=64, dropout=0.1, n_position=200,
-            trg_emb_prj_weight_sharing=False, emb_src_trg_weight_sharing=False,
+            trg_emb_prj_weight_sharing=False,
             scale_emb_or_prj='prj'):
         super().__init__()
 
